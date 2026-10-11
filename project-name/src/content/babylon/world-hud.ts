@@ -1,3 +1,11 @@
+interface HudLine { text: string; top: number; lineHeight: number; width: number }
+interface Rect { left: number; top: number; width: number; height: number }
+type HitTargets = Partial<Record<"openSettings" | "cycleResolution", Rect>>;
+interface HudLayoutOptions { width: number; height: number; devicePixelRatio?: number; titleLineHeight: number; bodyLineHeight: number; titleWidth: number; titleButtonWidth: number; resolutionLineWidth: number; fpsWidth?: number }
+type FontStyle = Pick<CSSStyleDeclaration, "fontSize" | "fontStyle" | "fontWeight" | "fontFamily" | "lineHeight">;
+export type HudContext = Pick<CanvasRenderingContext2D, "clearRect" | "save" | "restore" | "drawImage" | "fillText" | "font" | "textAlign" | "textBaseline" | "fillStyle" | "imageSmoothingEnabled"> & { measureText(text: string): Pick<TextMetrics, "width"> & Partial<TextMetrics> };
+type HudOptions = { width: number; height: number; devicePixelRatio?: number; visible: false } | { width: number; height: number; devicePixelRatio?: number; visible?: true; resolutionText: string; renderScaleText: string; modeText?: string; fpsText?: string; titleStyle: FontStyle; bodyStyle: FontStyle; color?: string };
+
 export const BABYLON_HUD_LOGO_SIZE = 32;
 export const BABYLON_HUD_BOTTOM_INSET = 9;
 const BABYLON_HUD_LOGO_OPTICAL_OFFSET = 0.5;
@@ -14,7 +22,7 @@ export function getWorldHudLayout({
   titleButtonWidth,
   resolutionLineWidth,
   fpsWidth = 0,
-}) {
+}: HudLayoutOptions) {
   const dpr = Number.isFinite(devicePixelRatio) && devicePixelRatio > 0 ? devicePixelRatio : 1;
   const cssWidth = width / dpr;
   const cssHeight = height / dpr;
@@ -26,7 +34,7 @@ export function getWorldHudLayout({
   const scaleTop = resolutionTop + bodyLineHeight;
   const modeTop = scaleTop + bodyLineHeight;
 
-  const centeredLine = (top, lineHeight, measuredWidth) => ({
+  const centeredLine = (top: number, lineHeight: number, measuredWidth: number) => ({
     left: (cssWidth - (measuredWidth / dpr)) / 2,
     top,
     width: measuredWidth / dpr,
@@ -48,7 +56,7 @@ export function getWorldHudLayout({
       { text: "", top: scaleTop, lineHeight: bodyLineHeight, width: 0 },
       { text: "", top: modeTop, lineHeight: bodyLineHeight, width: 0 },
       { text: "", top: logoTop - bodyLineHeight, lineHeight: bodyLineHeight, width: fpsWidth },
-    ],
+    ] satisfies [HudLine, HudLine, HudLine, HudLine, HudLine],
     hitTargets: {
       openSettings: { ...titleRect, width: titleButtonWidth / dpr },
       cycleResolution: resolutionRect,
@@ -60,33 +68,23 @@ export function getWorldHudLayout({
   };
 }
 
-function canvasFont(style, devicePixelRatio) {
+function canvasFont(style: FontStyle, devicePixelRatio: number) {
   const fontSize = Number.parseFloat(style.fontSize) * devicePixelRatio;
   return `${style.fontStyle} ${style.fontWeight} ${fontSize}px ${style.fontFamily}`;
 }
 
-function baselineOffset(context, lineHeight) {
+function baselineOffset(context: HudContext, lineHeight: number) {
   const metrics = context.measureText("Mg");
   const ascent = metrics.fontBoundingBoxAscent ?? metrics.actualBoundingBoxAscent ?? 0;
   const descent = metrics.fontBoundingBoxDescent ?? metrics.actualBoundingBoxDescent ?? 0;
   return ((lineHeight - ascent - descent) / 2) + ascent;
 }
 
-export function drawWorldHud(context, logo, {
-  width,
-  height,
-  devicePixelRatio = 1,
-  visible = true,
-  resolutionText,
-  renderScaleText,
-  modeText = "Mode: 2DPixelPerfect",
-  fpsText = "FPS: 000",
-  titleStyle,
-  bodyStyle,
-  color = "#e0694b",
-}) {
+export function drawWorldHud(context: HudContext, logo: CanvasImageSource | null, options: HudOptions) {
+  const { width, height, devicePixelRatio = 1 } = options;
   context.clearRect(0, 0, width, height);
-  if (!visible) return { layout: null, hitTargets: {} };
+  if (options.visible === false) return { layout: null, hitTargets: {} };
+  const { resolutionText, renderScaleText, modeText = "Mode: 2DPixelPerfect", fpsText = "FPS: 000", titleStyle, bodyStyle, color = "#e0694b" } = options;
 
   const dpr = Number.isFinite(devicePixelRatio) && devicePixelRatio > 0 ? devicePixelRatio : 1;
   const titleFont = canvasFont(titleStyle, dpr);
@@ -113,8 +111,8 @@ export function drawWorldHud(context, logo, {
     bodyLineHeight,
     titleWidth,
     titleButtonWidth,
-    resolutionLineWidth: bodyWidths[0],
-    fpsWidth: bodyWidths[3],
+    resolutionLineWidth: bodyWidths[0]!,
+    fpsWidth: bodyWidths[3]!,
   });
 
   context.imageSmoothingEnabled = true;
@@ -137,20 +135,23 @@ export function drawWorldHud(context, logo, {
   context.font = bodyFont;
   for (let index = 1; index < lines.length; index += 1) {
     const line = layout.lines[index];
+    const text = lines[index];
+    const measuredWidth = bodyWidths[index - 1];
+    if (!line || text === undefined || measuredWidth === undefined) continue;
     context.fillText(
-      lines[index],
+      text,
       width / 2,
       (line.top * dpr) + baselineOffset(context, bodyLineHeight * dpr) - (BABYLON_HUD_BODY_BASELINE_OFFSET * dpr),
     );
-    line.text = lines[index];
-    line.width = bodyWidths[index - 1];
+    line.text = text;
+    line.width = measuredWidth;
   }
   context.restore();
 
   return { layout, hitTargets: layout.hitTargets };
 }
 
-export function hitTestWorldHud(point, hitTargets) {
+export function hitTestWorldHud(point: { x: number; y: number }, hitTargets: HitTargets | null) {
   for (const [action, rect] of Object.entries(hitTargets ?? {})) {
     if (rect
       && point.x >= rect.left && point.x <= rect.left + rect.width

@@ -5,6 +5,8 @@ reference-only requests, follow `AGENTS.md` and do not copy files.
 
 ## 1. Confirm project and destination
 
+- [ ] Keep every generated or copied project in strict TypeScript, including all source, tests, executable configuration and tooling. Carry this requirement into the new project's AGENTS.md and README so human and AI updates retain it.
+
 - [ ] Identify the reuse mode: new GitHub repository, local project copy, or
       reference only. Do not mix repository-creation workflows.
 - [ ] Confirm or discover the project's purpose, target platforms, selected
@@ -89,7 +91,8 @@ copy:
       remote.
 - [ ] Before project-specific implementation, rename the copied `project-name/`
       application directory to a concise, fitting name for the new app or game.
-      Update Vite's `root`, project documentation paths, generated-output
+      Update Vite's `root`, both TypeScript config include lists, npm test paths,
+      workflow paths, project documentation paths, generated-output
       exclusions in `.gitignore`, and every other reference to the old folder
       name. Keep the directory named `project-name/` in the template repository
       itself. Then replace `{project-name}`, `{github-owner}`, and
@@ -124,6 +127,13 @@ copy:
 - [ ] Preserve or deliberately adapt the four HTML corner roles in `AGENTS.md`.
 
 ## 3. Select tooling and verification
+
+- [ ] Retain strict TypeScript for app, test, config and tool source. Run
+      `npm run check:typescript-source` and `npm run typecheck` before tests/build;
+      verify injected type errors and orphan TS fail checks.
+- [ ] Use headless/no-window browser automation; minimize only when required by
+      browser capabilities and do not take desktop focus.
+
 
 Base commands on the resulting project's inspected configuration; examples in
 the template are not evidence that a command exists in the new project.

@@ -25,8 +25,14 @@ jobs:
           node-version: 24
       - name: Install dependencies
         run: npm ci
+      - name: Check TypeScript source coverage
+        run: npm run check:typescript-source
+      - name: Check strict TypeScript
+        run: npm run typecheck
       - name: Test template
         run: npm test
+      - name: Build template
+        run: npm run build
       - name: Bump patch version
         id: version
         shell: bash

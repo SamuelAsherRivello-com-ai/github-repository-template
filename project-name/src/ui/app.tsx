@@ -1,16 +1,23 @@
+import type { ComponentType, ReactNode } from "react";
+import type { Layout } from "./layout.ts";
+import type { Gutters } from "./browser-surface.tsx";
+export interface ReadoutProps { hudVisible: boolean; viewportPixels: { width: number; height: number }; devicePixelRatio: number; openSettings: () => void }
+interface ContentPresentation { title?: string; Readout?: ComponentType<ReadoutProps>; Settings?: ComponentType }
+interface AppConfig { fullscreen: boolean; orientation: "portrait" | "landscape" | null; hudVisible: boolean }
+
 import { useCallback, useEffect, useState } from "react";
 import versionText from "../../../version.txt?raw";
-import { ContentShellProvider } from "../shared/ContentShellContext.jsx";
-import { readProjectConfig, writeProjectConfigPatch } from "../shared/projectConfigStorage.js";
-import { BrowserSurface } from "./BrowserSurface.jsx";
-import { aspectRatioPresets, defaultLayout } from "./layout.js";
-import { Dialog } from "./Dialog.jsx";
+import { ContentShellProvider } from "../shared/content-shell-context.tsx";
+import { readProjectConfig, writeProjectConfigPatch } from "../shared/project-config-storage.ts";
+import { BrowserSurface } from "./browser-surface.tsx";
+import { aspectRatioPresets, defaultLayout } from "./layout.ts";
+import { Dialog } from "./dialog.tsx";
 
 const fullscreenStorageKey = "github-repository-template.fullscreen";
 const defaultConfig = Object.freeze({ fullscreen: false, orientation: null, hudVisible: true });
 const repositoryUrl = "https://github.com/SamuelAsherRivello/github-repository-template";
 
-function readConfig() {
+function readConfig(): AppConfig {
   try {
     const saved = readProjectConfig(localStorage);
     return {
@@ -25,7 +32,7 @@ function readConfig() {
   }
 }
 
-export function Corner({ position, children }) {
+export function Corner({ position, children }: { position: "top_left" | "top_right" | "bottom_left" | "bottom_right"; children: ReactNode }) {
   return <div className={`corner corner_${position}`}>{children}</div>;
 }
 
@@ -37,11 +44,11 @@ function GitHubMark() {
   );
 }
 
-export function App({ layout = defaultLayout, content = null, contentPresentation = null, gutters = {} }) {
+export function App({ layout = defaultLayout, content = null, contentPresentation = null, gutters = {} }: { layout?: Layout; content?: ReactNode; contentPresentation?: ContentPresentation | null; gutters?: Gutters }) {
   const [config, setConfig] = useState(readConfig);
   const { orientation: orientationOverride, hudVisible } = config;
-  const setOrientationOverride = (orientation) => setConfig((current) => ({ ...current, orientation }));
-  const setHudVisible = (hudVisible) => setConfig((current) => ({ ...current, hudVisible }));
+  const setOrientationOverride = (orientation: AppConfig["orientation"]) => setConfig((current) => ({ ...current, orientation }));
+  const setHudVisible = (hudVisible: boolean) => setConfig((current) => ({ ...current, hudVisible }));
   const landscape = (orientationOverride ?? layout.orientation) === "landscape";
   const portrait = !landscape;
   const activeLayout = orientationOverride === null ? layout : {
@@ -53,12 +60,12 @@ export function App({ layout = defaultLayout, content = null, contentPresentatio
   const [viewportPixels, setViewportPixels] = useState({ width: 0, height: 0 });
   const [windowPixels, setWindowPixels] = useState({ width: window.innerWidth, height: window.innerHeight });
   const [devicePixelRatio, setDevicePixelRatio] = useState(window.devicePixelRatio);
-  const [activeDialog, setActiveDialog] = useState(null);
+  const [activeDialog, setActiveDialog] = useState<"config" | "stats" | "content-settings" | null>(null);
   const contentSettingsOpen = activeDialog === "content-settings";
   const openContentSettings = useCallback(() => {
     if (contentPresentation?.Settings) setActiveDialog("content-settings");
   }, [contentPresentation]);
-  const updateViewportPixels = useCallback((rect) => {
+  const updateViewportPixels = useCallback((rect: DOMRect) => {
     setViewportPixels((current) => {
       const next = { width: Math.round(rect.width), height: Math.round(rect.height) };
       return current.width === next.width && current.height === next.height ? current : next;
@@ -77,7 +84,7 @@ export function App({ layout = defaultLayout, content = null, contentPresentatio
   }, []);
 
   useEffect(() => {
-    const handleShortcut = (event) => {
+    const handleShortcut = (event: KeyboardEvent) => {
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
       const key = event.key.toLowerCase();
       if (key === "f") toggleFullscreen();
@@ -97,7 +104,7 @@ export function App({ layout = defaultLayout, content = null, contentPresentatio
 
   useEffect(() => {
     try {
-      writeProjectConfigPatch(localStorage, config);
+      writeProjectConfigPatch(localStorage, { ...config });
       localStorage.setItem(fullscreenStorageKey, config.fullscreen ? "true" : "false");
     } catch {
       // Keep the in-memory React settings usable when browser storage is unavailable.
@@ -176,7 +183,7 @@ export function App({ layout = defaultLayout, content = null, contentPresentatio
           </section>
         </Corner>}
         {activeDialog && <Dialog
-          title={contentSettingsOpen ? contentPresentation.title ?? "Content settings" : activeDialog === "config" ? "Config" : "Stats"}
+          title={contentSettingsOpen ? contentPresentation?.title ?? "Content settings" : activeDialog === "config" ? "Config" : "Stats"}
           className={contentSettingsOpen ? "content_settings_dialog" : ""}
           onClose={() => setActiveDialog(null)}
         >

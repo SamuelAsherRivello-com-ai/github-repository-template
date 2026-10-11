@@ -173,3 +173,16 @@ that it applies to the current task.
 Do not create a pull request unless the user explicitly asks for one in the
 current request. A push, commit, or completed template/OpenSpec workflow does
 not imply approval to create a pull request.
+
+## TypeScript and unattended verification
+
+All resulting apps and games must retain strict TypeScript for source, tests,
+executable config and tools. Follow compiler ownership and rename instructions in
+`docs/coding-standards.md`. Run source coverage, typecheck, tests and gated build
+before delivery; never weaken checks to suppress migration errors. Browser tests
+run headless/no-window, or minimized only for a required capability, without
+stealing desktop focus.
+
+## Required language for every template use
+
+Every use of this template, including local copies, generated repositories, apps, games and later updates, MUST use strict TypeScript for all authored source, tests, executable configuration and tooling. Human contributors and AI agents must preserve this policy. Generated JavaScript output, third-party dependencies and native shell scripts remain permitted; do not replace authored TypeScript with JavaScript or weaken compiler/source-coverage gates.

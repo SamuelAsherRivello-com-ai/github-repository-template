@@ -1,3 +1,4 @@
+import type { Layout } from "../src/ui/layout.ts";
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -5,17 +6,17 @@ import test from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
-import viteConfig from '../../vite.config.js';
-import { defaultLayout, fitViewport, validateLayout } from '../src/ui/layout.js';
-import { projectConfigStorageKey, readProjectConfig, writeProjectConfigPatch } from '../src/shared/projectConfigStorage.js';
+import viteConfig from '../../vite.config.ts';
+import { defaultLayout, fitViewport, validateLayout } from '../src/ui/layout.ts';
+import { projectConfigStorageKey, readProjectConfig, writeProjectConfigPatch } from '../src/shared/project-config-storage.ts';
 
 test('keeps npm/application and GitHub Pages roots', () => {
   assert.equal(viteConfig.root, 'project-name');
   assert.equal(viteConfig.base, '/github-repository-template/');
 });
 test('fits orientations and project-defined ratios in CSS pixels', () => {
-  for (const layout of [defaultLayout, {orientation:'portrait',width:9,height:16}, {orientation:'square',width:1,height:1}, {orientation:'landscape',width:7,height:3}]) {
-    for (const [w,h] of [[1600,900],[400,900],[800,800],[160,100]]) {
+  for (const layout of ([defaultLayout, {orientation:'portrait',width:9,height:16}, {orientation:'square',width:1,height:1}, {orientation:'landscape',width:7,height:3}] satisfies Layout[])) {
+    for (const [w,h] of ([[1600,900],[400,900],[800,800],[160,100]] as const)) {
       const fit = fitViewport(w,h,layout);
       assert.ok(fit.width <= w && fit.height <= h + 1e-9);
       assert.ok(Math.abs(fit.width/fit.height - layout.width/layout.height) < 1e-9);
@@ -26,17 +27,20 @@ test('fits orientations and project-defined ratios in CSS pixels', () => {
   }
 });
 test('invalid dimensions and orientation give actionable errors', () => {
-  for (const width of [0,-1,Infinity,NaN,'16']) assert.throws(() => validateLayout({...defaultLayout,width}), /finite positive/);
+  for (const width of [0,-1,Infinity,NaN]) assert.throws(() => validateLayout({...defaultLayout,width}), /finite positive/);
   assert.throws(() => validateLayout({orientation:'portrait',width:16,height:9}), /orientation must match/);
+  // @ts-expect-error Exercise runtime validation of an unsupported orientation.
   assert.throws(() => validateLayout({...defaultLayout,orientation:'unknown'}), /orientation must match/);
+  // @ts-expect-error Exercise runtime validation of a nonnumeric ratio.
+  assert.throws(() => validateLayout({...defaultLayout,width:'16'}), /finite positive/);
   assert.throws(() => fitViewport(-1,900,defaultLayout), /nonnegative CSS/);
   assert.deepEqual(fitViewport(0,0,defaultLayout), {width:0,height:0,x:0,y:0});
 });
 test('renderer settings patch the shared config without dropping shell preferences', () => {
   const values = new Map([[projectConfigStorageKey, JSON.stringify({ renderPreset: 'half', hudVisible: false })]]);
   const storage = {
-    getItem: key => values.get(key) ?? null,
-    setItem: (key, value) => values.set(key, value),
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
   };
 
   assert.equal(writeProjectConfigPatch(storage, { fullscreen: true }), true);
@@ -53,8 +57,8 @@ test('renderer settings patch the shared config without dropping shell preferenc
   });
 });
 test('preserves corner contracts and engine-neutral content-layer guidance', async () => {
-  const read = name => readFile(new URL('../'+name,import.meta.url),'utf8');
-  const [app,surface,main,html,guide] = await Promise.all([read('src/ui/App.jsx'),read('src/ui/BrowserSurface.jsx'),read('src/main.jsx'),read('index.html'),read('../docs/layout-and-game-integration.md')]);
+  const read = (name: string) => readFile(new URL('../'+name,import.meta.url),'utf8');
+  const [app,surface,main,html,guide] = await Promise.all([read('src/ui/app.tsx'),read('src/ui/browser-surface.tsx'),read('src/main.tsx'),read('index.html'),read('../docs/layout-and-game-integration.md')]);
   assert.ok(main.includes('getElementById("root")'));
   assert.ok(html.includes('id="root"'));
   for (const id of ['content_layer','ui_layer','viewport','browser_surface']) assert.ok(surface.includes('id="'+id+'"'));
@@ -68,15 +72,15 @@ test('preserves corner contracts and engine-neutral content-layer guidance', asy
   assert.doesNotMatch(surface,/import.*babylon/i);
 });
 test('keeps the UI and content source boundaries discoverable', async () => {
-  const read = name => readFile(new URL('../' + name, import.meta.url), 'utf8');
+  const read = (name: string) => readFile(new URL('../' + name, import.meta.url), 'utf8');
   const [main, template, content, standards] = await Promise.all([
-    read('src/main.jsx'),
-    read('src/ui/Template.jsx'),
-    read('src/content/Content.jsx'),
+    read('src/main.tsx'),
+    read('src/ui/template.tsx'),
+    read('src/content/content.tsx'),
     read('../docs/coding-standards.md'),
   ]);
-  assert.match(main, /\.\/ui\/App\.jsx/);
-  assert.match(main, /\.\/content\/Content\.jsx/);
+  assert.match(main, /\.\/ui\/app\.tsx/);
+  assert.match(main, /\.\/content\/content\.tsx/);
   assert.match(main, /<AppComposition \/>/);
   assert.match(main, /contentPresentation=\{\{/);
   assert.match(main, /BabylonPresentationProvider/);
@@ -99,12 +103,13 @@ test('renders the shell without a presentation and with a stub presentation', as
   });
 
   const server = await createServer({
-    configFile: fileURLToPath(new URL('../../vite.config.js', import.meta.url)),
+    configFile: fileURLToPath(new URL('../../vite.config.ts', import.meta.url)),
     server: { middlewareMode: true },
     appType: 'custom',
   });
   try {
-    const { App } = await server.ssrLoadModule('/src/ui/App.jsx');
+    // Vite's SSR loader has an untyped boundary; bind it to the checked module.
+    const { App } = await server.ssrLoadModule('/src/ui/app.tsx') as typeof import('../src/ui/app.tsx');
     const StubReadout = () => createElement('div', null, 'Stub engine status');
     const StubSettings = () => createElement('div', null, 'Stub engine settings');
     const withoutPresentation = renderToStaticMarkup(createElement(App));
@@ -123,8 +128,8 @@ test('renders the shell without a presentation and with a stub presentation', as
   } finally {
     await server.close();
     if (priorWindow) Object.defineProperty(globalThis, 'window', priorWindow);
-    else delete globalThis.window;
+    else Reflect.deleteProperty(globalThis, "window");
     if (priorStorage) Object.defineProperty(globalThis, 'localStorage', priorStorage);
-    else delete globalThis.localStorage;
+    else Reflect.deleteProperty(globalThis, "localStorage");
   }
 });

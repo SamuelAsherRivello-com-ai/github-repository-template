@@ -1,4 +1,4 @@
-export function getRenderScaleDisplayText(scale) {
+export function getRenderScaleDisplayText(scale: number) {
   const validScale = Number.isFinite(scale) && scale > 0 ? scale : 0;
   const formattedScale = Number.isInteger(validScale)
     ? String(validScale)

@@ -1,15 +1,20 @@
+import type { Dispatch, ReactNode, SetStateAction } from "react";
+import type { ReadoutProps } from "../../ui/app.tsx";
+import type { RenderPreset, RenderResolutionInfo } from "./render-resolution.ts";
+interface PresentationState { renderPreset: RenderPreset; setRenderPreset: Dispatch<SetStateAction<RenderPreset>>; renderScale: number; setRenderScale: Dispatch<SetStateAction<number>>; renderResolutionInfo: RenderResolutionInfo | null; setRenderResolutionInfo: Dispatch<SetStateAction<RenderResolutionInfo | null>>; cycleRenderResolution: () => void }
+
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import "./BabylonPresentation.css";
-import babylonLogoUrl from "./images/babylon_logo_32x32.png?url";
-import { getRenderScaleDisplayText } from "./showcase-overlay.js";
-import { readProjectConfig, writeProjectConfigPatch } from "../../shared/projectConfigStorage.js";
+import "./babylon-presentation.css";
+import babylonLogoUrl from "./images/babylon-logo-32x32.png?url";
+import { getRenderScaleDisplayText } from "./showcase-overlay.ts";
+import { readProjectConfig, writeProjectConfigPatch } from "../../shared/project-config-storage.ts";
 import {
   cycleRenderResolutionPreset,
   getRenderResolutionDimensions,
   isRenderResolutionPreset,
-} from "./render-resolution.js";
+} from "./render-resolution.ts";
 
-const BabylonPresentationContext = createContext({
+const BabylonPresentationContext = createContext<PresentationState>({
   renderPreset: "native",
   setRenderPreset() {},
   renderScale: 1,
@@ -28,7 +33,7 @@ function readRenderPreset() {
   }
 }
 
-function writeRenderPreset(renderPreset) {
+function writeRenderPreset(renderPreset: RenderPreset) {
   try {
     writeProjectConfigPatch(localStorage, { renderPreset });
   } catch {
@@ -36,10 +41,10 @@ function writeRenderPreset(renderPreset) {
   }
 }
 
-export function BabylonPresentationProvider({ children }) {
+export function BabylonPresentationProvider({ children }: { children: ReactNode }) {
   const [renderPreset, setRenderPreset] = useState(readRenderPreset);
   const [renderScale, setRenderScale] = useState(1);
-  const [renderResolutionInfo, setRenderResolutionInfo] = useState(null);
+  const [renderResolutionInfo, setRenderResolutionInfo] = useState<RenderResolutionInfo | null>(null);
   useEffect(() => writeRenderPreset(renderPreset), [renderPreset]);
   const cycleRenderResolution = useCallback(
     () => setRenderPreset((current) => cycleRenderResolutionPreset(current)),
@@ -65,7 +70,7 @@ export function useBabylonPresentation() {
   return useContext(BabylonPresentationContext);
 }
 
-export function BabylonLiteReadout({ hudVisible, viewportPixels, devicePixelRatio, openSettings }) {
+export function BabylonLiteReadout({ hudVisible, viewportPixels, devicePixelRatio, openSettings }: ReadoutProps) {
   const { renderPreset, renderScale, renderResolutionInfo, cycleRenderResolution } = useBabylonPresentation();
   const nativeWidth = Math.floor(viewportPixels.width * devicePixelRatio);
   const nativeHeight = Math.floor(viewportPixels.height * devicePixelRatio);
@@ -86,7 +91,7 @@ export function BabylonLiteReadout({ hudVisible, viewportPixels, devicePixelRati
     let frameId = 0;
     let windowStart = 0;
     let frameCount = 0;
-    const sample = (timestamp) => {
+    const sample = (timestamp: number) => {
       frameCount += 1;
       if (!windowStart) windowStart = timestamp;
       if (timestamp - windowStart >= 1000) {
@@ -101,7 +106,7 @@ export function BabylonLiteReadout({ hudVisible, viewportPixels, devicePixelRati
   }, [hudVisible]);
 
   useEffect(() => {
-    const handleShortcut = (event) => {
+    const handleShortcut = (event: KeyboardEvent) => {
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
       if (event.key.toLowerCase() === "r" && !event.repeat) cycleRenderResolution();
     };
@@ -125,7 +130,7 @@ export function BabylonLiteReadout({ hudVisible, viewportPixels, devicePixelRati
 export function BabylonLiteSettings() {
   const { renderPreset, renderScale, renderResolutionInfo } = useBabylonPresentation();
   const resolution = renderResolutionInfo?.preset === renderPreset ? renderResolutionInfo : null;
-  const resolutionText = resolution?.width > 0
+  const resolutionText = resolution && resolution.width > 0
     ? `${resolution.width}x${resolution.height}${renderPreset === "native" ? " (Native)" : ""}`
     : "measuring…";
   return (

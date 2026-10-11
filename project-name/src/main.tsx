@@ -1,12 +1,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { Content } from "./content/Content.jsx";
+import { Content } from "./content/content.tsx";
 import {
   BabylonLiteReadout,
   BabylonLiteSettings,
   BabylonPresentationProvider,
-} from "./content/babylon/BabylonPresentation.jsx";
-import { App } from "./ui/App.jsx";
+} from "./content/babylon/babylon-presentation.tsx";
+import { App } from "./ui/app.tsx";
 import "./ui/style.css";
 
 function AppComposition() {
@@ -22,7 +22,7 @@ function AppComposition() {
   );
 }
 
-createRoot(document.getElementById("root")).render(
+createRoot(document.getElementById("root") ?? (() => { throw new Error("Missing application root"); })()).render(
   <StrictMode>
     <BabylonPresentationProvider>
       <AppComposition />

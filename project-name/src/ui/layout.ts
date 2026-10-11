@@ -1,16 +1,18 @@
 // Change these presets to update the template's supported aspect ratios in one place.
 // Layout dimensions are CSS-pixel ratios; the content integration owns engine-specific render and backing resolutions.
+export interface Layout { width: number; height: number; orientation: "portrait" | "landscape" | "square"; label?: string; gutterBackground?: string }
+
 export const aspectRatioPresets = Object.freeze({
   landscape: Object.freeze({ width: 16, height: 9, label: "16:9" }),
   portrait: Object.freeze({ width: 9, height: 16, label: "9:16" }),
 });
 
 export const defaultLayout = Object.freeze({
-  orientation: "landscape",
+  orientation: "landscape" as const,
   ...aspectRatioPresets.landscape,
 });
 
-export function validateLayout(layout) {
+export function validateLayout(layout: Layout) {
   const { width, height, orientation } = layout;
   if (![width, height].every((value) => Number.isFinite(value) && value > 0)) {
     throw new Error("Viewport width and height must be finite positive numbers; for example, 16 and 9.");
@@ -25,7 +27,7 @@ export function validateLayout(layout) {
   return layout;
 }
 
-export function fitViewport(surfaceWidth, surfaceHeight, layout) {
+export function fitViewport(surfaceWidth: number, surfaceHeight: number, layout: Layout) {
   validateLayout(layout);
   if (![surfaceWidth, surfaceHeight].every((value) => Number.isFinite(value) && value >= 0)) {
     throw new Error("Browser surface dimensions must be finite nonnegative CSS pixel values.");

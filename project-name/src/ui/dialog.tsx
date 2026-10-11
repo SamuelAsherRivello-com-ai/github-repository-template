@@ -1,4 +1,6 @@
-export function Dialog({ title, onClose, children, footer = null, className = "" }) {
+import type { ReactNode } from "react";
+
+export function Dialog({ title, onClose, children, footer = null, className = "" }: { title: ReactNode; onClose: () => void; children: ReactNode; footer?: ReactNode; className?: string }) {
   return (
     <div className="dialog_backdrop" role="presentation" onClick={onClose}>
       <section className={`dialog ${className}`.trim()} role="dialog" aria-modal="true" aria-labelledby="dialog_title" onClick={(event) => event.stopPropagation()}>

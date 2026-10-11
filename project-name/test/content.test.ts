@@ -1,22 +1,25 @@
+import type { Sprite2DView } from "@babylonjs/lite";
+import type { HudContext } from "../src/content/babylon/world-hud.ts";
+interface SourceFile { file: string; source: string }
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { inflateSync } from 'node:zlib';
 import test from 'node:test';
-import { contentConfig, getRenderingPolicy, pixelPerfectOptions } from '../src/content/babylon/config.js';
-import { getInitializationMessage } from '../src/content/babylon/initialization.js';
-import { getLogicalToRenderScale } from '../src/content/babylon/pixel-perfect.js';
+import { contentConfig, getRenderingPolicy, pixelPerfectOptions } from '../src/content/babylon/config.ts';
+import { getInitializationMessage } from '../src/content/babylon/initialization.ts';
+import { getLogicalToRenderScale } from '../src/content/babylon/pixel-perfect.ts';
 import {
   BabylonLiteAIEntry,
   BabylonLiteMode,
   snapPositionPxThroughView,
-} from '../src/content/babylon/pixel-grid-entry.js';
-import { getRenderScaleDisplayText } from '../src/content/babylon/showcase-overlay.js';
-import { BABYLON_HUD_LOGO_SIZE, drawWorldHud, getWorldHudLayout, hitTestWorldHud } from '../src/content/babylon/world-hud.js';
+} from '../src/content/babylon/pixel-grid-entry.ts';
+import { getRenderScaleDisplayText } from '../src/content/babylon/showcase-overlay.ts';
+import { BABYLON_HUD_LOGO_SIZE, drawWorldHud, getWorldHudLayout, hitTestWorldHud } from '../src/content/babylon/world-hud.ts';
 import {
   createRenderTargetSurfaceView,
   cycleRenderResolutionPreset,
   getRenderResolutionDimensions,
-} from '../src/content/babylon/render-resolution.js';
+} from '../src/content/babylon/render-resolution.ts';
 
 test('defaults to Babylon Lite 2D and does not apply the pixel preset to 3D', () => {
   assert.deepEqual(contentConfig, { renderer: 'babylon-lite', style: '2d' });
@@ -65,7 +68,7 @@ test('derives four relative render resolutions from native backing dimensions an
 
 test('snaps Babylon Lite sprite anchors after the layer view and preserves the grid on round trip', async () => {
   const { sprite2DWorldToScreenToRef } = await import('@babylonjs/lite');
-  const view = { positionPx: [0.5, -0.5], zoom: 1, rotation: 0 };
+  const view: Sprite2DView = { positionPx: [0.5, -0.5], zoom: 1, rotation: 0 };
   const snapped = snapPositionPxThroughView(view, [10.2, 2.2]);
   const projected = sprite2DWorldToScreenToRef(view, snapped[0], snapped[1], { x: 0, y: 0 });
 
@@ -75,7 +78,7 @@ test('snaps Babylon Lite sprite anchors after the layer view and preserves the g
 
 test('snaps correctly through a zoomed and rotated Babylon Lite layer view', async () => {
   const { sprite2DWorldToScreenToRef } = await import('@babylonjs/lite');
-  const view = { positionPx: [3.25, -4.5], zoom: 2, rotation: Math.PI / 2 };
+  const view: Sprite2DView = { positionPx: [3.25, -4.5], zoom: 2, rotation: Math.PI / 2 };
   const snapped = snapPositionPxThroughView(view, [10.2, 2.2]);
   const projected = sprite2DWorldToScreenToRef(view, snapped[0], snapped[1], { x: 0, y: 0 });
 
@@ -86,16 +89,18 @@ test('snaps correctly through a zoomed and rotated Babylon Lite layer view', asy
 
 test('requires explicit mode setup and resnaps a layer after view changes', () => {
   assert.throws(
+    // @ts-expect-error Deliberately invalid input exercises the runtime guard.
     () => BabylonLiteAIEntry.addSprite({}, { positionPx: [0, 0] }),
     /configure/,
   );
   assert.throws(
+    // @ts-expect-error Deliberately invalid input exercises the runtime guard.
     () => BabylonLiteAIEntry.configure({ mode: '3d' }),
     /Unsupported or missing Babylon Lite mode/,
   );
   BabylonLiteAIEntry.configure({ mode: BabylonLiteMode.PixelPerfect2D });
 
-  const layer = { view: { positionPx: [0, 0], zoom: 1, rotation: 0 } };
+  const layer: { view: Sprite2DView } = { view: { positionPx: [0, 0], zoom: 1, rotation: 0 } };
   BabylonLiteAIEntry.updateView(layer, {
     positionPx: [0.5, -0.25],
     zoom: 2,
@@ -107,13 +112,14 @@ test('requires explicit mode setup and resnaps a layer after view changes', () =
     rotation: Math.PI / 2,
   });
   assert.throws(
+    // @ts-expect-error Deliberately invalid input exercises the runtime guard.
     () => BabylonLiteAIEntry.updateView(layer, { offset: [1, 2] }),
     /Unsupported Babylon Lite view property/,
   );
 });
 
 test('rejects Babylon Lite sprite mutations outside the pixel-grid entry module', async () => {
-  const allowedFile = 'content/babylon/pixel-grid-entry.js';
+  const allowedFile = 'content/babylon/pixel-grid-entry.ts';
   const mutationPattern = /\b(?:addSprite2D|updateSprite2D)\s*\(/;
   const liteImportPattern = /import\s*\{[^}]*\b(?:addSprite2D|updateSprite2D)\b[^}]*\}\s*from\s*["']@babylonjs\/lite["']/s;
   const namespaceMutationPattern = /\b[A-Za-z_$][\w$]*\.(?:addSprite2D|updateSprite2D)\s*\(/;
@@ -121,11 +127,11 @@ test('rejects Babylon Lite sprite mutations outside the pixel-grid entry module'
   const viewHelperPattern = /\bcenterSprite2DView\s*\(/;
   const rendererHelperPattern = /\bBabylonLiteAIEntry\.(?:addPresentationSprite|updatePresentationSprite)\s*\(/;
 
-  function findBypasses(sources) {
+  function findBypasses(sources: SourceFile[]) {
     return sources.flatMap(({ file, source }) => {
       if (file.replaceAll('\\', '/').endsWith(allowedFile)) return [];
       const rendererHelperOutsideContent = rendererHelperPattern.test(source)
-        && !file.replaceAll('\\', '/').endsWith('content/Content.jsx');
+        && !file.replaceAll('\\', '/').endsWith('content/content.tsx');
       return mutationPattern.test(source)
         || liteImportPattern.test(source)
         || namespaceMutationPattern.test(source)
@@ -137,13 +143,13 @@ test('rejects Babylon Lite sprite mutations outside the pixel-grid entry module'
     });
   }
 
-  async function listSources(directory, prefix = '') {
+  async function listSources(directory: URL, prefix = ''): Promise<SourceFile[]> {
     const entries = await readdir(directory, { withFileTypes: true });
     const nested = await Promise.all(entries.map(async (entry) => {
       const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
       const absolute = new URL(`${entry.name}${entry.isDirectory() ? '/' : ''}`, directory);
       if (entry.isDirectory()) return listSources(absolute, relative);
-      if (!/\.jsx?$/.test(entry.name)) return [];
+      if (!/\.tsx?$/.test(entry.name)) return [];
       return [{ file: relative, source: await readFile(absolute, 'utf8') }];
     }));
     return nested.flat();
@@ -171,7 +177,7 @@ test('keeps the logical camera focus and spinning title at world origin across t
   assert.equal(getLogicalToRenderScale(320, 180), 1);
   assert.equal(getLogicalToRenderScale(640, 360), 2);
 
-  const content = await readFile(new URL('../src/content/Content.jsx', import.meta.url), 'utf8');
+  const content = await readFile(new URL('../src/content/content.tsx', import.meta.url), 'utf8');
   assert.match(content, /positionPx: \[0, 0\]/);
   assert.match(content, /BabylonLiteAIEntry\.centerView\(layer, 0, 0, resolved\.width, resolved\.height\)/);
   assert.match(content, /BabylonLiteAIEntry\.updateView\(layer,\s*\{\s*zoom: getLogicalToRenderScale/);
@@ -179,8 +185,9 @@ test('keeps the logical camera focus and spinning title at world origin across t
 });
 
 test('adapts Babylon Lite sprite projection dimensions while sharing the engine surface registry', () => {
-  const contexts = [];
-  const engine = {
+  const contexts: unknown[] = [];
+  interface TestEngine { engine: TestEngine | null; canvas: { width: number; height: number }; _renderingContexts: unknown[]; format: string }
+  const engine: TestEngine = {
     engine: null,
     canvas: { width: 1280, height: 720 },
     _renderingContexts: contexts,
@@ -241,18 +248,19 @@ test('keeps the Babylon Lite world HUD at the existing CSS-pixel position across
 });
 
 test('draws the live Babylon Lite readout and clears a hidden HUD', () => {
-  const drawn = [];
-  const context = {
-    clearRect() {}, save() {}, restore() {}, drawImage(...args) { drawn.push(['image', ...args]); },
+  const drawn: unknown[][] = [];
+  const context: HudContext = {
+    font: "", fillStyle: "", textAlign: "center", textBaseline: "alphabetic", imageSmoothingEnabled: true,
+    clearRect() {}, save() {}, restore() {}, drawImage(...args: unknown[]) { drawn.push(['image', ...args]); },
     measureText(text) {
-      const size = Number.parseFloat(this.font.match(/[0-9.]+px/)[0]);
+      const size = Number.parseFloat(this.font.match(/[0-9.]+px/)?.[0] ?? "0");
       return { width: text.length * size * 0.5, fontBoundingBoxAscent: size * 0.75, fontBoundingBoxDescent: size * 0.25 };
     },
-    fillText(...args) { drawn.push(['text', this.fillStyle, ...args]); },
+    fillText(...args: unknown[]) { drawn.push(['text', this.fillStyle, ...args]); },
   };
   const titleStyle = { fontStyle: 'normal', fontWeight: '700', fontSize: '13.333px', fontFamily: 'serif', lineHeight: '18.666px' };
   const bodyStyle = { fontStyle: 'normal', fontWeight: '400', fontSize: '10.667px', fontFamily: 'serif', lineHeight: '14.933px' };
-  const result = drawWorldHud(context, {}, {
+  const result = drawWorldHud(context, null, {
     width: 1016,
     height: 572,
     resolutionText: '(R) RenderResolution: 254x143',
@@ -263,29 +271,30 @@ test('draws the live Babylon Lite readout and clears a hidden HUD', () => {
 
   assert.ok(drawn.filter(([kind]) => kind === 'text').every(([, color]) => color === '#e0694b'));
   assert.equal(drawn.filter(([kind]) => kind === 'text').length, 5);
+  assert.ok(result.layout);
   assert.equal(result.layout.lines[1].text, '(R) RenderResolution: 254x143');
   assert.equal(result.layout.lines[2].text, 'Render Scale: 0.25x');
   assert.equal(result.layout.lines[3].text, 'Mode: 2DPixelPerfect');
   assert.equal(result.layout.lines[4].text, 'FPS: 000');
-  assert.deepEqual(drawWorldHud(context, {}, { width: 1016, height: 572, visible: false }), { layout: null, hitTargets: {} });
+  assert.deepEqual(drawWorldHud(context, null, { width: 1016, height: 572, visible: false }), { layout: null, hitTargets: {} });
 });
 
 test('keeps the shell renderer-neutral and wires Babylon presentation through optional slots', async () => {
   const [app, styles, content, presentation, shellContext, main, surface] = await Promise.all([
-    readFile(new URL('../src/ui/App.jsx', import.meta.url), 'utf8'),
+    readFile(new URL('../src/ui/app.tsx', import.meta.url), 'utf8'),
     readFile(new URL('../src/ui/style.css', import.meta.url), 'utf8'),
-    readFile(new URL('../src/content/Content.jsx', import.meta.url), 'utf8'),
-    readFile(new URL('../src/content/babylon/BabylonPresentation.jsx', import.meta.url), 'utf8'),
-    readFile(new URL('../src/shared/ContentShellContext.jsx', import.meta.url), 'utf8'),
-    readFile(new URL('../src/main.jsx', import.meta.url), 'utf8'),
-    readFile(new URL('../src/ui/BrowserSurface.jsx', import.meta.url), 'utf8'),
+    readFile(new URL('../src/content/content.tsx', import.meta.url), 'utf8'),
+    readFile(new URL('../src/content/babylon/babylon-presentation.tsx', import.meta.url), 'utf8'),
+    readFile(new URL('../src/shared/content-shell-context.tsx', import.meta.url), 'utf8'),
+    readFile(new URL('../src/main.tsx', import.meta.url), 'utf8'),
+    readFile(new URL('../src/ui/browser-surface.tsx', import.meta.url), 'utf8'),
   ]);
 
   assert.match(app, /className="corner-title">/);
   assert.doesNotMatch(app, /content\/babylon/);
   assert.match(app, /contentPresentation\?\.Readout/);
   assert.match(app, /contentPresentation\?\.Settings/);
-  assert.match(app, /writeProjectConfigPatch\(localStorage, config\)/);
+  assert.match(app, /writeProjectConfigPatch\(localStorage, \{ \.\.\.config \}\)/);
   assert.doesNotMatch(app, /key === "r"|renderResolution/);
   assert.doesNotMatch(app, /renderPreset|renderResolution|babylon/i);
   assert.match(app, /key === "b" && contentPresentation\?\.Settings/);
@@ -321,8 +330,8 @@ test('reports WebGPU-only initialization and allocation failures and uses the en
   assert.match(getInitializationMessage(true, new Error('GPU out of memory while allocating texture')), /could not allocate the selected render resolution/);
 
   const [content, main] = await Promise.all([
-    readFile(new URL('../src/content/Content.jsx', import.meta.url), 'utf8'),
-    readFile(new URL('../src/main.jsx', import.meta.url), 'utf8'),
+    readFile(new URL('../src/content/content.tsx', import.meta.url), 'utf8'),
+    readFile(new URL('../src/main.tsx', import.meta.url), 'utf8'),
   ]);
   assert.match(main, /<StrictMode>/);
   for (const expression of [
@@ -352,9 +361,9 @@ test('imports an original 32x32 hard-edged PNG with only black and gray pixels',
   assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
 
   let offset = 8;
-  const idat = [];
-  let width;
-  let height;
+  const idat: Buffer[] = [];
+  let width: number | undefined;
+  let height: number | undefined;
   while (offset < png.length) {
     const size = png.readUInt32BE(offset);
     const type = png.toString('ascii', offset + 4, offset + 8);
@@ -371,17 +380,20 @@ test('imports an original 32x32 hard-edged PNG with only black and gray pixels',
 
   assert.equal(width, 32);
   assert.equal(height, 32);
+  assert.ok(width !== undefined && height !== undefined);
   const decoded = inflateSync(Buffer.concat(idat));
-  const shades = new Set();
+  const shades = new Set<number>();
   for (let y = 0; y < height; y++) {
-    const rowStart = y * (1 + width * 4);
+    const rowStart: number = y * (1 + width * 4);
     assert.equal(decoded[rowStart], 0, 'asset rows use the exact, non-smoothed PNG filter');
     for (let x = 0; x < width; x++) {
       const pixel = rowStart + 1 + x * 4;
       assert.equal(decoded[pixel], decoded[pixel + 1]);
       assert.equal(decoded[pixel], decoded[pixel + 2]);
       assert.equal(decoded[pixel + 3], 255);
-      shades.add(decoded[pixel]);
+      const shade = decoded[pixel];
+      assert.ok(shade !== undefined);
+      shades.add(shade);
     }
   }
   assert.deepEqual([...shades].sort((a, b) => a - b), [0, 64, 128, 192]);

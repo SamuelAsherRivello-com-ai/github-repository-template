@@ -1,5 +1,5 @@
-export function getInitializationMessage(webGpuAvailable, error) {
-  const reason = String(error?.message ?? error ?? "");
+export function getInitializationMessage(webGpuAvailable: boolean, error: unknown) {
+  const reason = String((typeof error === "object" && error !== null && "message" in error ? error.message : undefined) ?? error ?? "");
   if (!webGpuAvailable || /webgpu.*(?:not available|unsupported)|adapter.*(?:not available|unsupported|not found)/i.test(reason)) {
     return "Babylon Lite requires WebGPU. Enable WebGPU or use a compatible browser and device.";
   }

@@ -21,13 +21,19 @@ import {
   stopEngine,
 } from "@babylonjs/lite";
 import tileUrl from "./babylon/images/concentric-squares-32.png?url";
-import { contentConfig, getRenderingPolicy, logicalResolution, pixelPerfectOptions, showcaseTileSize } from "./babylon/config.js";
-import { getInitializationMessage } from "./babylon/initialization.js";
-import { getLogicalToRenderScale } from "./babylon/pixel-perfect.js";
-import { BabylonLiteAIEntry, BabylonLiteMode } from "./babylon/pixel-grid-entry.js";
-import { createRenderTargetSurfaceView, getRenderResolutionDimensions } from "./babylon/render-resolution.js";
-import { useContentShell } from "../shared/ContentShellContext.jsx";
-import { useBabylonPresentation } from "./babylon/BabylonPresentation.jsx";
+import { contentConfig, getRenderingPolicy, logicalResolution, pixelPerfectOptions, showcaseTileSize } from "./babylon/config.ts";
+import { getInitializationMessage } from "./babylon/initialization.ts";
+import { getLogicalToRenderScale } from "./babylon/pixel-perfect.ts";
+import { BabylonLiteAIEntry, BabylonLiteMode } from "./babylon/pixel-grid-entry.ts";
+import { createRenderTargetSurfaceView, getRenderResolutionDimensions } from "./babylon/render-resolution.ts";
+import { useContentShell } from "../shared/content-shell-context.tsx";
+import { useBabylonPresentation } from "./babylon/babylon-presentation.tsx";
+
+// Lite 1.32 exposes this runtime limit through an internal device field omitted
+// from its public declaration. Keep that pinned boundary assertion in one place.
+function getTextureDimensionLimit(engine: Awaited<ReturnType<typeof createEngine>>): number {
+  return (engine as typeof engine & { _device: { limits: { maxTextureDimension2D: number } } })._device.limits.maxTextureDimension2D;
+}
 
 const TAU = Math.PI * 2;
 const ROTATION_STEPS = 628;
@@ -37,12 +43,12 @@ const BACKGROUND = Object.freeze({ r: 1, g: 1, b: 1, a: 1 });
 function PixelPerfectShowcase() {
   const { paused } = useContentShell();
   const { setRenderScale, renderPreset, setRenderResolutionInfo } = useBabylonPresentation();
-  const hostRef = useRef(null);
-  const canvasRef = useRef(null);
+  const hostRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const processingPausedRef = useRef(paused);
   const renderPresetRef = useRef(renderPreset);
-  const applyRenderResolutionRef = useRef(null);
-  const engineRef = useRef(null);
+  const applyRenderResolutionRef = useRef<(() => void) | null>(null);
+  const engineRef = useRef<Awaited<ReturnType<typeof createEngine>> | null>(null);
   const engineReadyRef = useRef(false);
   const engineRunningRef = useRef(false);
   const [message, setMessage] = useState("Starting Babylon Lite…");
@@ -55,26 +61,27 @@ function PixelPerfectShowcase() {
   useEffect(() => {
     const host = hostRef.current;
     const canvas = canvasRef.current;
+    if (!host || !canvas) return;
     let cancelled = false;
     let disposed = false;
-    let engine = null;
-    let texture = null;
-    let atlas = null;
-    let renderTexture = null;
-    let presentationAtlas = null;
-    let presentationRenderer = null;
-    let presentationSprite = null;
+    let engine: Awaited<ReturnType<typeof createEngine>> | null = null;
+    let texture: Awaited<ReturnType<typeof loadTexture2D>> | null = null;
+    let atlas: ReturnType<typeof createGridSpriteAtlas> | null = null;
+    let renderTexture: ReturnType<typeof createRenderTexture2D> | null = null;
+    let presentationAtlas: ReturnType<typeof createGridSpriteAtlas> | null = null;
+    let presentationRenderer: ReturnType<typeof createSpriteRenderer> | null = null;
+    let presentationSprite: ReturnType<typeof BabylonLiteAIEntry.addPresentationSprite> | null = null;
     let presentationWidth = 0;
     let presentationHeight = 0;
     let nativeWidth = 0;
     let nativeHeight = 0;
-    let renderSurface = null;
-    let renderer = null;
-    let layer = null;
-    let sprite = null;
-    let resizeObserver = null;
-    let dprQuery = null;
-    let animationBinding = null;
+    let renderSurface: Awaited<ReturnType<typeof createEngine>> | null = null;
+    let renderer: ReturnType<typeof createSpriteRenderer> | null = null;
+    let layer: ReturnType<typeof createSprite2DLayer> | null = null;
+    let sprite: ReturnType<typeof BabylonLiteAIEntry.addSprite> | null = null;
+    let resizeObserver: ResizeObserver | null = null;
+    let dprQuery: MediaQueryList | null = null;
+    let animationBinding: ReturnType<typeof attachSpriteAnimationsToRenderer> | null = null;
     let setupFinished = false;
     let failed = false;
 
@@ -88,7 +95,7 @@ function PixelPerfectShowcase() {
       dprQuery.addEventListener("change", handleDprChange, { once: true });
     };
     const updateRenderResolution = () => {
-      if (!engine || !renderer || !host || !canvas || !sprite) return;
+      if (!engine || !renderer || !host || !canvas || !sprite || !layer) return;
       const dpr = window.devicePixelRatio || 1;
       nativeWidth = Math.max(1, Math.floor(host.clientWidth * dpr));
       nativeHeight = Math.max(1, Math.floor(host.clientHeight * dpr));
@@ -96,7 +103,7 @@ function PixelPerfectShowcase() {
         nativeWidth,
         nativeHeight,
         renderPresetRef.current,
-        engine._device.limits.maxTextureDimension2D,
+        getTextureDimensionLimit(engine),
       );
       if (renderSurface) {
         renderSurface.canvas.width = resolved.width;
@@ -124,6 +131,7 @@ function PixelPerfectShowcase() {
           });
         }
         setSpriteRendererTarget(renderer, renderTexture);
+        if (!renderTexture) throw new Error("Missing render texture");
         presentationAtlas = createGridSpriteAtlas(renderTexture, {
           cellWidthPx: resolved.width,
           cellHeightPx: resolved.height,
@@ -256,7 +264,7 @@ function PixelPerfectShowcase() {
           initialWidth,
           initialHeight,
           renderPresetRef.current,
-          engine._device.limits.maxTextureDimension2D,
+          getTextureDimensionLimit(engine),
         );
         renderSurface = createRenderTargetSurfaceView(engine, initialRenderSize.width, initialRenderSize.height);
         renderer = createSpriteRenderer(renderSurface, {

@@ -4,15 +4,15 @@ The starter implements a React browser surface, centered ratio-preserving viewpo
 
 ## Implemented configuration
 
-Edit `project-name/src/ui/layout.js` for defaults. Positive finite `width` and `height` define a ratio, not a game resolution. The layout validator supports square ratios for general use, but new app and game concepts select portrait (width < height) or landscape (width > height). `gutterBackground` sets the outside background. Invalid configuration displays an actionable alert.
+Edit `project-name/src/ui/layout.ts` for defaults. Positive finite `width` and `height` define a ratio, not a game resolution. The layout validator supports square ratios for general use, but new app and game concepts select portrait (width < height) or landscape (width > height). `gutterBackground` sets the outside background. Invalid configuration displays an actionable alert.
 
-`App` accepts `layout`, `content` (React elements), optional `contentPresentation`, and `gutters` with optional `top`, `bottom`, `left`, and `right` React elements. Supply these in `project-name/src/main.jsx`. `contentPresentation` may provide a `title`, `Readout` component, and `Settings` component for optional content-specific controls. The shell renders those components in its readout and settings dialog slots; omit them when the selected app or content has no such controls. The shell does not import a renderer. The selected content integration owns renderer settings and diagnostics, and can use `useContentShell()` from `src/shared/ContentShellContext.jsx` to pause processing while a shell dialog is open. Generic content can scroll internally under the UI. Gutters occupy residual space only, scroll internally, and collapse to zero without shrinking the viewport. For games, choose whether and how game content scrolls to suit the design. Corners keep title, links, settings, and version roles; bounded scroll regions and adaptive insets keep controls reachable at small sizes.
+`App` accepts `layout`, `content` (React elements), optional `contentPresentation`, and `gutters` with optional `top`, `bottom`, `left`, and `right` React elements. Supply these in `project-name/src/main.tsx`. `contentPresentation` may provide a `title`, `Readout` component, and `Settings` component for optional content-specific controls. The shell renders those components in its readout and settings dialog slots; omit them when the selected app or content has no such controls. The shell does not import a renderer. The selected content integration owns renderer settings and diagnostics, and can use `useContentShell()` from `src/shared/content-shell-context.tsx` to pause processing while a shell dialog is open. Generic content can scroll internally under the UI. Gutters occupy residual space only, scroll internally, and collapse to zero without shrinking the viewport. For games, choose whether and how game content scrolls to suit the design. Corners keep title, links, settings, and version roles; bounded scroll regions and adaptive insets keep controls reachable at small sizes.
 
 The page structure allows the complete HUD to remain inside the viewport and visible during fullscreen. Gutters are not visible in fullscreen. Custom UI in a gutter is acceptable only as secondary UI; all primary UI must be implemented in React within the viewport.
 
 The corner spacing is controlled by the `--viewport-padding` CSS variable in `project-name/src/ui/style.css` (10px by default). The responsive inset caps this value on very small viewports.
 
-```jsx
+```tsx
 <App
   layout={{ orientation: "portrait", width: 9, height: 16, gutterBackground: "#f0f0f0" }}
   content={<main>Your responsive app content</main>}
@@ -22,7 +22,7 @@ The corner spacing is controlled by the `--viewport-padding` CSS variable in `pr
 
 ## Implemented renderer policies and lifecycle
 
-Edit `project-name/src/content/babylon/config.js` to change the developer-selected renderer and content style. It defaults to Babylon Lite + 2D; no runtime mode picker is added. Every 2D game uses Pixel Perfect. This policy does not force the game's logical resolution or render scale; choose both for the game. Selecting 3D does not apply the 2D policy and does not create a scene: implement the requested 3D game scene and its renderer setup using the separate Performance-scaled 3D guidance below. This template does not include a 3D showcase scene. Babylon Lite requires WebGPU. Do not add a fallback renderer; show a clear unsupported-browser message when WebGPU is unavailable or initialization fails.
+Edit `project-name/src/content/babylon/config.ts` to change the developer-selected renderer and content style. It defaults to Babylon Lite + 2D; no runtime mode picker is added. Every 2D game uses Pixel Perfect. This policy does not force the game's logical resolution or render scale; choose both for the game. Selecting 3D does not apply the 2D policy and does not create a scene: implement the requested 3D game scene and its renderer setup using the separate Performance-scaled 3D guidance below. This template does not include a 3D showcase scene. Babylon Lite requires WebGPU. Do not add a fallback renderer; show a clear unsupported-browser message when WebGPU is unavailable or initialization fails.
 
 ### Game content and audio choices
 
@@ -48,8 +48,8 @@ In 2D Pixel Perfect mode, initialize `BabylonLiteAIEntry` with `BabylonLiteMode.
 
 Route camera pan, zoom, rotation, and centering changes through `updateView` or `centerView`. Those operations resnap all managed sprites on the changed layer. Do not call Lite's `addSprite2D` or `updateSprite2D` directly, or mutate `layer.view` directly, in game code. The renderer-owned presentation-sprite helpers are reserved for the content renderer and preserve exact full-surface geometry.
 
-```js
-import { BabylonLiteAIEntry, BabylonLiteMode } from "./babylon/pixel-grid-entry.js";
+```ts
+import { BabylonLiteAIEntry, BabylonLiteMode } from "./babylon/pixel-grid-entry.ts";
 
 BabylonLiteAIEntry.configure({ mode: BabylonLiteMode.PixelPerfect2D });
 
@@ -75,7 +75,7 @@ Babylon Lite requires WebGPU. If WebGPU is unavailable or engine initialization 
 
 Document overrides beside presets, including incompatibilities. Texture filtering, mipmaps, camera projection, canvas backing sizing, and anti-aliasing are renderer decisions that must implement the selected policy.
 
-`Content.jsx` owns asynchronous engine setup and cleanup. It loads the tile texture, creates the nearest-sampled centered sprite layer, registers the renderer, and calls `startEngine`; Babylon Lite owns the render loop and automatically tracks canvas client size and DPR. A ResizeObserver updates the centered sprite when the viewport changes. React dialog state controls a 5 CSS pixel orange outline around the Babylon content surface, rendered as a DOM overlay so it remains visible while Babylon processing is paused. DPR-change listeners are removed on cleanup. Renderer disposal releases its resources and caller-owned atlases/textures before the engine is disposed. StrictMode remounts cancel initialization safely and clean up stale listeners and bindings. Camera, filtering, mipmap, and MSAA options must be verified against the pinned Lite release.
+`content.tsx` owns asynchronous engine setup and cleanup. It loads the tile texture, creates the nearest-sampled centered sprite layer, registers the renderer, and calls `startEngine`; Babylon Lite owns the render loop and automatically tracks canvas client size and DPR. A ResizeObserver updates the centered sprite when the viewport changes. React dialog state controls a 5 CSS pixel orange outline around the Babylon content surface, rendered as a DOM overlay so it remains visible while Babylon processing is paused. DPR-change listeners are removed on cleanup. Renderer disposal releases its resources and caller-owned atlases/textures before the engine is disposed. StrictMode remounts cancel initialization safely and clean up stale listeners and bindings. Camera, filtering, mipmap, and MSAA options must be verified against the pinned Lite release.
 
 ## Five resolution terms
 
