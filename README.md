@@ -53,8 +53,7 @@ Rendering: {2D Pixel Perfect | 3D}
 <!-- AI: Do not include anything above the Table of Contents within the Table of Contents. -->
 1. [Getting Started](#getting-started)
 2. [Project Details](#project-details)
-3. [Deep Dive](#deep-dive)
-4. [Credits](#credits)
+3. [Credits](#credits)
 
 ## Getting Started
 
@@ -117,15 +116,9 @@ This is the project details...
 <!-- AI: Keep this section to exactly four bullet points. -->
 
 - `docs/` contains canonical README images and project documentation assets.
-- [Layout and game integration](docs/layout-and-game-integration.md) documents viewport configuration, the implemented Babylon Lite showcase, and guidance for adapting the content layer to a game or app.
-- `project-name/index.html` mounts the React browser surface; `project-name/src/` contains viewport, gutter, content, and UI composition.
-- `project-name/test/` contains focused automated checks for the starter.
-
-## Deep Dive
-
-<!-- AI: This is where you want to have one page about the technical details of the project for a developer audience to get a high-level overview of the key three classes and contracts. -->
-
-- To learn more about the technical details, check out the [Deep Dive](docs/deep-dive-overview.md).
+- `project-name/src/content/` contains the app or game's primary content layer.
+- `project-name/src/shared/` contains shared utilities and cross-cutting code.
+- `project-name/src/ui/` contains the React UI and HUD composition.
 
 ## Credits
 
