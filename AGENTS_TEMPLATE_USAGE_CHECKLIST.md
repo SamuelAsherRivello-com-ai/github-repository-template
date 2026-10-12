@@ -5,7 +5,7 @@ reference-only requests, follow `AGENTS.md` and do not copy files.
 
 ## 1. Confirm project and destination
 
-- [ ] Keep every generated or copied project in strict TypeScript, including all source, tests, executable configuration and tooling. Carry this requirement into the new project's AGENTS.md and README so human and AI updates retain it.
+- [ ] Keep every generated or copied project in strict TypeScript, including all source, tests, executable configuration and tooling. Carry this requirement into the new project's AGENTS.md so human and AI updates retain it.
 
 - [ ] Identify the reuse mode: new GitHub repository, local project copy, or
       reference only. Do not mix repository-creation workflows.

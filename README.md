@@ -151,15 +151,3 @@ This is the project details...
 - Provided as-is under the [MIT License](LICENSE).
 
 - Copyright © 2026 Rivello Multimedia Consulting, LLC.
-
-### TypeScript checks
-
-From the repository root run `npm ci`, `npm run check:typescript-source`,
-`npm run typecheck`, `npm test`, and `npm run build`. Build includes source,
-compiler and test gates. Source, tests, Vite config and tools use strict TypeScript.
-See [compiler ownership and rename rules](docs/coding-standards.md#strict-typescript-coverage)
-when creating an app or game.
-
-## Required language for every template use
-
-Every use of this template, including local copies, generated repositories, apps, games and later updates, MUST use strict TypeScript for all authored source, tests, executable configuration and tooling. Human contributors and AI agents must preserve this policy. Generated JavaScript output, third-party dependencies and native shell scripts remain permitted; do not replace authored TypeScript with JavaScript or weaken compiler/source-coverage gates.
