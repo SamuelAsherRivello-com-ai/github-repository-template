@@ -2,6 +2,16 @@
 <a href="docs/samuel-asher-rivello-banner.png"><img src="docs/samuel-asher-rivello-banner.png" width="640" alt="Banner" /></a>
 <BR>
 
+[![Babylon Lite](https://img.shields.io/badge/Babylon_Lite-WebGPU-4B6EAF?logo=webgpu&logoColor=white)](https://www.npmjs.com/package/@babylonjs/lite)
+[![GitHub Actions](https://img.shields.io/github/actions/workflow/status/SamuelAsherRivello/github-repository-template/deploy-pages.yml?label=GitHub%20Actions)](https://github.com/SamuelAsherRivello/github-repository-template/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![OpenSpec](https://img.shields.io/badge/OpenSpec-enabled-6B46C1)](https://github.com/Fission-AI/OpenSpec)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Template](https://img.shields.io/badge/GitHub-Template-181717?logo=github)](https://github.com/SamuelAsherRivello/github-repository-template/generate)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
+[![WebGPU](https://img.shields.io/badge/WebGPU-required-005A9C?logo=webgpu&logoColor=white)](https://www.w3.org/TR/webgpu/)
+
 # {project-name}
 
 <!-- AI: Do not add more than one sentence of introductory text at the top of this section. -->
