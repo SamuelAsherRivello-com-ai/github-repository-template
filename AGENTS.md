@@ -139,13 +139,15 @@ The default HTML template uses four reusable `corner` instances inside
 Format content in each corner using either the menu title style or the menu
 body style. Represent boolean settings with checkboxes.
 
-## OpenSpec setup
+## OpenSpec workflow
 
-The template preserves `.agents/skills/.openspec-target` but does not bundle
-generated OpenSpec skills. When the resulting project requires OpenSpec, follow
-the authoritative setup and verification procedure in
-[the template usage checklist](AGENTS_TEMPLATE_USAGE_CHECKLIST.md#openspec-setup-when-required).
-Do not hand-edit generated OpenSpec skills.
+When a resulting project requires OpenSpec, use the available global OpenSpec
+skills in this order: Explore, Propose, optional Update, then Apply. Do not
+install, generate, or add repository-local OpenSpec skills or marker files. If
+the required global skills are unavailable, stop and ask the user before using
+another workflow. The template does not include OpenSpec configuration, changes,
+or specifications. A project may create its own OpenSpec artifacts only through
+the selected global workflow.
 
 ## Optional AI skills
 
@@ -171,8 +173,8 @@ that it applies to the current task.
 ## Pull request workflow
 
 Do not create a pull request unless the user explicitly asks for one in the
-current request. A push, commit, or completed template/OpenSpec workflow does
-not imply approval to create a pull request.
+current request. A push, commit, or completed template workflow does not imply
+approval to create a pull request.
 
 ## TypeScript and unattended verification
 

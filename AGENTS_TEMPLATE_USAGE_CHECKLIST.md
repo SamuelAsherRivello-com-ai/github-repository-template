@@ -160,28 +160,22 @@ the template are not evidence that a command exists in the new project.
       automated. If a required runtime or access is unavailable, report the
       check as blocked or unverified with the reason.
 
-## 4. OpenSpec setup (when required)
+## 4. OpenSpec workflow (when required)
 
 Perform this section only when OpenSpec is selected for the resulting project.
 
-- [ ] Generate repository-local `.agents/skills/openspec-*` files in the
-      resulting project using OpenSpec `1.13.1`. This template preserves only
-      `.agents/skills/.openspec-target`; never hand-edit generated skills.
-- [ ] Verify `openspec --version` reports `1.13.1`. If missing or different,
-      install `@fission-ai/openspec@1.13.1` using the
-      [official installation guide](https://openspec.dev/docs/installation).
-- [ ] Run `openspec doctor --json` from the repository root. Confirm
-      `.agents/skills/.openspec-target` contains `codex`, every generated skill
-      folder matches its `name:` frontmatter, and every
-      `metadata.generatedBy` value is `1.13.1`.
-- [ ] Reopen Codex at the resulting repository root and verify `$openspec-*`
-      autocomplete includes `$openspec-apply-change` before relying on the
-      repository-local workflow. If reopening or UI inspection is unavailable,
-      report it as unverified.
-- [ ] Replace neutral `openspec/config.yaml` context with verified project
-      constraints before planning the first substantial change.
-- [ ] Keep `changes/` for active work and `specs/` for accepted specifications.
-      Sync accepted delta specifications before archiving a completed change.
+- [ ] Confirm that the in-scope global OpenSpec skills are available. Use them
+      in order: Explore, Propose, optional Update, then Apply.
+- [ ] Do not install OpenSpec, generate repository-local OpenSpec skills, or
+      add `.agents/skills/.openspec-target`. If a needed global skill is
+      unavailable, stop and ask the user before choosing an alternative.
+- [ ] Start with the project created from this template, which has no template
+      OpenSpec configuration, changes, specifications, or maintenance history.
+      Create project-specific OpenSpec artifacts only when the selected global
+      workflow requires them.
+- [ ] Use verified project constraints when planning the first substantial
+      change. Keep active and accepted project-specific artifacts in the form
+      required by the global workflow.
 
 ## 5. Delivery gate and summary
 

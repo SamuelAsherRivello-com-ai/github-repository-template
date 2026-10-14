@@ -9,7 +9,10 @@ For the baseline, the repository root holds the npm dependencies and project
 commands; application files live in `project-name/`. Keep repository metadata
 at the root.
 
-For a substantial feature or behavior change, use the configured OpenSpec
+For a substantial feature or behavior change that requires OpenSpec, use the
+available global skills in this order: Explore, Propose, optional Update, then
+Apply. Do not install or generate repository-local OpenSpec skills. If the
+needed global skills are unavailable, ask the user before using another
 workflow. Keep proposals, design decisions, tasks, implementation, and
 verification evidence consistent with one another.
 
@@ -26,5 +29,6 @@ verification evidence consistent with one another.
 ## Pull requests
 
 Describe the user-visible outcome, the checks performed, any manual evidence,
-documentation changes, and relevant OpenSpec change identifier. Call out new
-dependencies, configuration changes, and release implications.
+documentation changes, and an OpenSpec change identifier when the workflow
+produces one. Call out new dependencies, configuration changes, and release
+implications.

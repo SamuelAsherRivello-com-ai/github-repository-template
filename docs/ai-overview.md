@@ -4,8 +4,8 @@
 
 - `AGENTS.md` contains repository-specific AI agent guidance.
 - `AGENTS_TEMPLATE_USAGE_CHECKLIST.md` contains the template reuse checklist.
-- [openspec](../openspec/) contains the repository's specification workflow
-  configuration.
+- OpenSpec work uses the available global skills. The template does not include
+  OpenSpec configuration, changes, specifications, or generated skills.
 
 ## Optional
 
@@ -28,4 +28,5 @@ Humans should choose and install only the relevant skill using their AI tool's
 normal skill-installation mechanism. AI agents should first follow the
 repository's `AGENTS.md`, then use an available global skill, and finally use
 a project-local skill when the repository explicitly includes or requires one.
-Do not assume that a link alone installs or activates a skill.
+For OpenSpec, use only the in-scope global skills. Do not assume that a link
+alone installs or activates a skill.
