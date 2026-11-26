@@ -28,8 +28,8 @@ test('fits orientations and project-defined ratios in CSS pixels', () => {
 });
 test('flexible presets fit mobile aspect ratios and clamp outside their range', () => {
   for (const [layout, cases] of [
-    [aspectRatioPresets.landscape, [[1600,900], [1950,900], [2000,900]]],
-    [aspectRatioPresets.portrait, [[900,1600], [900,1950], [900,2000]]],
+    [aspectRatioPresets.landscape, [[1600,1000], [1600,900], [1950,900], [2000,900]]],
+    [aspectRatioPresets.portrait, [[1000,1600], [900,1600], [900,1950], [900,2000]]],
   ] as const) {
     const orientation = layout === aspectRatioPresets.landscape ? 'landscape' : 'portrait';
     for (const [width, height] of cases) {
@@ -37,6 +37,10 @@ test('flexible presets fit mobile aspect ratios and clamp outside their range', 
       assert.ok(Math.abs(result.width - width) < 1e-9 && Math.abs(result.height - height) < 1e-9);
     }
   }
+  const narrowLandscape = fitViewport(1400, 1000, { ...aspectRatioPresets.landscape, orientation: 'landscape' });
+  assert.ok(Math.abs(narrowLandscape.width / narrowLandscape.height - 16 / 10) < 1e-9);
+  const widePortrait = fitViewport(800, 1000, { ...aspectRatioPresets.portrait, orientation: 'portrait' });
+  assert.ok(Math.abs(widePortrait.width / widePortrait.height - 10 / 16) < 1e-9);
   const wide = fitViewport(2400, 900, { ...aspectRatioPresets.landscape, orientation: 'landscape' });
   assert.ok(Math.abs(wide.width / wide.height - 20 / 9) < 1e-9);
   const tall = fitViewport(900, 2400, { ...aspectRatioPresets.portrait, orientation: 'portrait' });

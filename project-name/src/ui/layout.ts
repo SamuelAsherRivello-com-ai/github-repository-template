@@ -3,8 +3,8 @@
 export interface Layout { width: number; height: number; orientation: "portrait" | "landscape" | "square"; label?: string; gutterBackground?: string; minRatio?: number; maxRatio?: number }
 
 export const aspectRatioPresets = Object.freeze({
-  landscape: Object.freeze({ width: 16, height: 9, label: "16:9 to 20:9", minRatio: 16 / 9, maxRatio: 20 / 9 }),
-  portrait: Object.freeze({ width: 9, height: 16, label: "9:20 to 9:16", minRatio: 9 / 20, maxRatio: 9 / 16 }),
+  landscape: Object.freeze({ width: 16, height: 9, label: "16:10 to 20:9", minRatio: 16 / 10, maxRatio: 20 / 9 }),
+  portrait: Object.freeze({ width: 9, height: 16, label: "9:20 to 10:16", minRatio: 9 / 20, maxRatio: 10 / 16 }),
 });
 
 export const defaultLayout = Object.freeze({
