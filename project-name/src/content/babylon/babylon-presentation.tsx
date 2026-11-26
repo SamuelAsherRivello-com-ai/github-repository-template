@@ -82,8 +82,8 @@ export function BabylonLiteReadout({ hudVisible, viewportPixels, devicePixelRati
     ? renderResolutionInfo
     : estimated;
   const resolutionText = resolution.width > 0
-    ? `(R) RenderRez: ${resolution.width}x${resolution.height}${renderPreset === "native" ? " (Native)" : ""}`
-    : "(R) RenderRez: measuring…";
+    ? `RenderRez: ${resolution.width}x${resolution.height}${renderPreset === "native" ? " (Native)" : ""}`
+    : "RenderRez: measuring…";
   const [fps, setFps] = useState(0);
 
   useEffect(() => {
@@ -119,8 +119,8 @@ export function BabylonLiteReadout({ hudVisible, viewportPixels, devicePixelRati
     <div className="babylon_readout" aria-label="Babylon Lite settings">
       <img src={babylonLogoUrl} width="32" height="32" alt="" />
       <button className="babylon_readout_title" type="button" onClick={openSettings}>(B) Babylon Lite</button>
-      <button className="babylon_readout_body" type="button" onClick={cycleRenderResolution}>{resolutionText}</button>
-      <div className="babylon_readout_body">{getRenderScaleDisplayText(renderScale)}</div>
+      <div className="babylon_readout_body">{resolutionText}</div>
+      <button className="babylon_readout_body" type="button" onClick={cycleRenderResolution}>(R) {getRenderScaleDisplayText(renderScale)}</button>
       <div className="babylon_readout_body">Mode: 2DPixelPerfect</div>
       <div className="babylon_readout_body" aria-live="off">FPS: {String(fps).padStart(3, "0")}</div>
     </div>
@@ -136,8 +136,8 @@ export function BabylonLiteSettings() {
   return (
     <div className="dialog_options babylon_settings">
       <div>Babylon Lite</div>
-      <div>(R) RenderRez: {resolutionText}</div>
-      <div>{getRenderScaleDisplayText(renderScale)}</div>
+      <div>RenderRez: {resolutionText}</div>
+      <div>(R) {getRenderScaleDisplayText(renderScale)}</div>
       <div>Mode: 2DPixelPerfect</div>
     </div>
   );

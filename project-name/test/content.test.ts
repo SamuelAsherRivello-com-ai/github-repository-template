@@ -263,8 +263,8 @@ test('draws the live Babylon Lite readout and clears a hidden HUD', () => {
   const result = drawWorldHud(context, null, {
     width: 1016,
     height: 572,
-    resolutionText: '(R) RenderRez: 254x143',
-    renderScaleText: 'Render Scale: 0.25x',
+    resolutionText: 'RenderRez: 254x143',
+    renderScaleText: '(R) Render Scale: 0.25x',
     titleStyle,
     bodyStyle,
   });
@@ -272,8 +272,8 @@ test('draws the live Babylon Lite readout and clears a hidden HUD', () => {
   assert.ok(drawn.filter(([kind]) => kind === 'text').every(([, color]) => color === '#e0694b'));
   assert.equal(drawn.filter(([kind]) => kind === 'text').length, 5);
   assert.ok(result.layout);
-  assert.equal(result.layout.lines[1].text, '(R) RenderRez: 254x143');
-  assert.equal(result.layout.lines[2].text, 'Render Scale: 0.25x');
+  assert.equal(result.layout.lines[1].text, 'RenderRez: 254x143');
+  assert.equal(result.layout.lines[2].text, '(R) Render Scale: 0.25x');
   assert.equal(result.layout.lines[3].text, 'Mode: 2DPixelPerfect');
   assert.equal(result.layout.lines[4].text, 'FPS: 000');
   assert.deepEqual(drawWorldHud(context, null, { width: 1016, height: 572, visible: false }), { layout: null, hitTargets: {} });
