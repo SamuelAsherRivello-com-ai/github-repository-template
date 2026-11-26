@@ -82,8 +82,8 @@ export function BabylonLiteReadout({ hudVisible, viewportPixels, devicePixelRati
     ? renderResolutionInfo
     : estimated;
   const resolutionText = resolution.width > 0
-    ? `(R) RenderResolution: ${resolution.width}x${resolution.height}${renderPreset === "native" ? " (Native)" : ""}`
-    : "(R) RenderResolution: measuring…";
+    ? `(R) RenderRez: ${resolution.width}x${resolution.height}${renderPreset === "native" ? " (Native)" : ""}`
+    : "(R) RenderRez: measuring…";
   const [fps, setFps] = useState(0);
 
   useEffect(() => {
@@ -136,7 +136,7 @@ export function BabylonLiteSettings() {
   return (
     <div className="dialog_options babylon_settings">
       <div>Babylon Lite</div>
-      <div>(R) RenderResolution: {resolutionText}</div>
+      <div>(R) RenderRez: {resolutionText}</div>
       <div>{getRenderScaleDisplayText(renderScale)}</div>
       <div>Mode: 2DPixelPerfect</div>
     </div>
