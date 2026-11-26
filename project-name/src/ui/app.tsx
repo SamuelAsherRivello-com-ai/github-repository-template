@@ -176,7 +176,7 @@ export function App({ layout = defaultLayout, content = null, contentPresentatio
           <section id="stats" aria-labelledby="stats_title">
             <div id="stats_title" className="corner-title">(V) Stats</div>
             <div id="version" className="corner-body">v{versionNumber}</div>
-            <div className="corner-body">DPR: {devicePixelRatio}</div>
+            <div className="corner-body">DPR: {devicePixelRatio.toFixed(2)}</div>
             <div id="aspect_ratio" className="corner-body">{activeLayout.label ?? `${activeLayout.width}:${activeLayout.height}`} Aspect</div>
             <div className="corner-body">{windowPixels.width}x{windowPixels.height} Window</div>
             <div className="corner-body">{viewportPixels.width}x{viewportPixels.height} Viewport</div>
@@ -194,7 +194,7 @@ export function App({ layout = defaultLayout, content = null, contentPresentatio
             <button type="button" onClick={resetLocalStorage}>(T) Reset Local Storage</button>
           </div> : <div className="dialog_options">
             <div>v{versionNumber}</div>
-            <div>DPR: {devicePixelRatio}</div>
+            <div>DPR: {devicePixelRatio.toFixed(2)}</div>
             <div>{activeLayout.label ?? `${activeLayout.width}:${activeLayout.height}`} Aspect</div>
             <div>{windowPixels.width}x{windowPixels.height} Window</div>
             <div>{viewportPixels.width}x{viewportPixels.height} Viewport</div>
