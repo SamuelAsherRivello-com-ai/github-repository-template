@@ -44,16 +44,22 @@ Rendering: {2D Pixel Perfect | 3D}
 
 ## Live Demo
 
-<!-- AI: Keep exactly one bullet containing the demo link and no other visible text. Do not mention releases or add other text here. Keep this one link updated to the latest release URL. -->
+<!-- AI: Keep exactly one bullet containing the demo link and no other visible text. Do not mention releases or add other text here. Keep this one link updated to the deployed demo URL. -->
 
-- [{live-demo-url}](https://samuelasherrivello.github.io/github-repository-template/)
+- [Play the live demo](https://samuelasherrivello-com-ai.github.io/github-repository-template/)
 
 
 ## Images
 
 <!-- AI: Do not add more than one sentence of introductory text at the top of this section. Work within the following HTML template -->
 
-<a href="docs/screenshot01.png"><img src="docs/screenshot01.png" width="640" alt="Screenshot placeholder" /></a>
+### Landscape
+
+<a href="docs/screenshot-landscape.png"><img src="docs/screenshot-landscape.png" width="640" alt="Desktop view of the template in landscape mode" /></a>
+
+### Portrait
+
+<a href="docs/screenshot-portrait.png"><img src="docs/screenshot-portrait.png" width="640" alt="Desktop view of the template in portrait mode" /></a>
 
 ## Table of Contents
 
