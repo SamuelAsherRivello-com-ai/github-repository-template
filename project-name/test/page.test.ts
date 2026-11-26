@@ -7,7 +7,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
 import viteConfig from '../../vite.config.ts';
-import { defaultLayout, fitViewport, validateLayout } from '../src/ui/layout.ts';
+import { aspectRatioPresets, defaultLayout, fitViewport, validateLayout } from '../src/ui/layout.ts';
 import { projectConfigStorageKey, readProjectConfig, writeProjectConfigPatch } from '../src/shared/project-config-storage.ts';
 
 test('keeps npm/application and GitHub Pages roots', () => {
@@ -15,7 +15,7 @@ test('keeps npm/application and GitHub Pages roots', () => {
   assert.equal(viteConfig.base, '/github-repository-template/');
 });
 test('fits orientations and project-defined ratios in CSS pixels', () => {
-  for (const layout of ([defaultLayout, {orientation:'portrait',width:9,height:16}, {orientation:'square',width:1,height:1}, {orientation:'landscape',width:7,height:3}] satisfies Layout[])) {
+  for (const layout of ([{orientation:'portrait',width:9,height:16}, {orientation:'square',width:1,height:1}, {orientation:'landscape',width:7,height:3}] satisfies Layout[])) {
     for (const [w,h] of ([[1600,900],[400,900],[800,800],[160,100]] as const)) {
       const fit = fitViewport(w,h,layout);
       assert.ok(fit.width <= w && fit.height <= h + 1e-9);
@@ -25,6 +25,23 @@ test('fits orientations and project-defined ratios in CSS pixels', () => {
       assert.ok(fit.width>0 && fit.height>0);
     }
   }
+});
+test('flexible presets fit mobile aspect ratios and clamp outside their range', () => {
+  for (const [layout, cases] of [
+    [aspectRatioPresets.landscape, [[1600,900], [1950,900], [2000,900]]],
+    [aspectRatioPresets.portrait, [[900,1600], [900,1950], [900,2000]]],
+  ] as const) {
+    const orientation = layout === aspectRatioPresets.landscape ? 'landscape' : 'portrait';
+    for (const [width, height] of cases) {
+      const result = fitViewport(width, height, { ...layout, orientation });
+      assert.ok(Math.abs(result.width - width) < 1e-9 && Math.abs(result.height - height) < 1e-9);
+    }
+  }
+  const wide = fitViewport(2400, 900, { ...aspectRatioPresets.landscape, orientation: 'landscape' });
+  assert.ok(Math.abs(wide.width / wide.height - 20 / 9) < 1e-9);
+  const tall = fitViewport(900, 2400, { ...aspectRatioPresets.portrait, orientation: 'portrait' });
+  assert.ok(Math.abs(tall.width / tall.height - 9 / 20) < 1e-9);
+  assert.throws(() => validateLayout({ ...defaultLayout, minRatio: 3 }), /ratio range/);
 });
 test('invalid dimensions and orientation give actionable errors', () => {
   for (const width of [0,-1,Infinity,NaN]) assert.throws(() => validateLayout({...defaultLayout,width}), /finite positive/);

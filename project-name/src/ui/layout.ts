@@ -1,10 +1,10 @@
 // Change these presets to update the template's supported aspect ratios in one place.
 // Layout dimensions are CSS-pixel ratios; the content integration owns engine-specific render and backing resolutions.
-export interface Layout { width: number; height: number; orientation: "portrait" | "landscape" | "square"; label?: string; gutterBackground?: string }
+export interface Layout { width: number; height: number; orientation: "portrait" | "landscape" | "square"; label?: string; gutterBackground?: string; minRatio?: number; maxRatio?: number }
 
 export const aspectRatioPresets = Object.freeze({
-  landscape: Object.freeze({ width: 16, height: 9, label: "16:9" }),
-  portrait: Object.freeze({ width: 9, height: 16, label: "9:16" }),
+  landscape: Object.freeze({ width: 16, height: 9, label: "16:9 to 20:9", minRatio: 16 / 9, maxRatio: 20 / 9 }),
+  portrait: Object.freeze({ width: 9, height: 16, label: "9:20 to 9:16", minRatio: 9 / 20, maxRatio: 9 / 16 }),
 });
 
 export const defaultLayout = Object.freeze({
@@ -24,6 +24,16 @@ export function validateLayout(layout: Layout) {
   if (!Number.isFinite(width / height) || width / height <= 0) {
     throw new Error("Viewport ratio is outside the supported numeric range; use smaller ratio dimensions.");
   }
+  if ((layout.minRatio === undefined) !== (layout.maxRatio === undefined)
+    || (layout.minRatio !== undefined && layout.maxRatio !== undefined
+      && (!Number.isFinite(layout.minRatio) || !Number.isFinite(layout.maxRatio)
+        || layout.minRatio <= 0 || layout.minRatio > layout.maxRatio
+        || width / height < layout.minRatio || width / height > layout.maxRatio
+        || (orientation === "landscape" && layout.minRatio <= 1)
+        || (orientation === "portrait" && layout.maxRatio >= 1)
+        || orientation === "square"))) {
+    throw new Error("Viewport ratio range must be positive, ordered, match its orientation, and include the preferred ratio.");
+  }
   return layout;
 }
 
@@ -32,7 +42,11 @@ export function fitViewport(surfaceWidth: number, surfaceHeight: number, layout:
   if (![surfaceWidth, surfaceHeight].every((value) => Number.isFinite(value) && value >= 0)) {
     throw new Error("Browser surface dimensions must be finite nonnegative CSS pixel values.");
   }
-  const ratio = layout.width / layout.height;
+  const preferred = layout.width / layout.height;
+  const available = surfaceHeight > 0 ? surfaceWidth / surfaceHeight : preferred;
+  const ratio = layout.minRatio !== undefined && layout.maxRatio !== undefined
+    ? Math.max(layout.minRatio, Math.min(layout.maxRatio, available))
+    : preferred;
   const width = Math.min(surfaceWidth, surfaceHeight * ratio);
   const height = width / ratio;
   return { width, height, x: (surfaceWidth - width) / 2, y: (surfaceHeight - height) / 2 };
