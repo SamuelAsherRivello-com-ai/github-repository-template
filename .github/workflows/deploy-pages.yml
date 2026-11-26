@@ -48,6 +48,9 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+      # Allow GitHub's artifact metadata to become visible to the deploy action.
+      - name: Wait for Pages artifact metadata
+        run: sleep 20
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
