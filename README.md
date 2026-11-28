@@ -2,10 +2,6 @@
 <a href="docs/samuel-asher-rivello-banner.png"><img src="docs/samuel-asher-rivello-banner.png" width="640" alt="Banner" /></a>
 <BR>
 
-# Video
-
-[![Watch the game project template video](docs/marketing/game-project-template-video.png)](https://www.youtube.com/watch?v=SmVa-FBMTbs)
-
 [![Babylon Lite](https://img.shields.io/badge/Babylon_Lite-WebGPU-4B6EAF?logo=webgpu&logoColor=white)](https://www.npmjs.com/package/@babylonjs/lite)
 [![GitHub Actions](https://img.shields.io/github/actions/workflow/status/SamuelAsherRivello/github-repository-template/deploy-pages.yml?label=GitHub%20Actions)](https://github.com/SamuelAsherRivello/github-repository-template/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -14,6 +10,10 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![WebGPU](https://img.shields.io/badge/WebGPU-required-005A9C?logo=webgpu&logoColor=white)](https://www.w3.org/TR/webgpu/)
+
+# Video
+
+[![Watch the game project template video](docs/marketing/game-project-template-video.png)](https://www.youtube.com/watch?v=SmVa-FBMTbs)
 
 # {project-name}
 
